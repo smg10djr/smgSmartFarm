@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_03_084439) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_03_085316) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -31,7 +31,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_084439) do
     t.datetime "last_seen_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "mqtt_state"
     t.index ["device_id"], name: "index_devices_on_device_id", unique: true
+  end
+
+  create_table "manual_measurements", force: :cascade do |t|
+    t.bigint "device_id", null: false
+    t.datetime "measured_at", null: false
+    t.decimal "ph", precision: 4, scale: 2
+    t.decimal "ec_ms_cm", precision: 5, scale: 2
+    t.string "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["device_id"], name: "index_manual_measurements_on_device_id"
   end
 
   create_table "sensor_readings", force: :cascade do |t|
@@ -51,5 +63,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_084439) do
   end
 
   add_foreign_key "alert_events", "devices"
+  add_foreign_key "manual_measurements", "devices"
   add_foreign_key "sensor_readings", "devices"
 end

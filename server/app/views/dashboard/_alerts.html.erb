@@ -6,7 +6,7 @@
     <li class="<%= alert.open? ? "alert-open" : "alert-resolved" %>">
       <strong><%= alert.device.device_id %></strong>
       <%= alert.message %>
-      · <%= l(alert.triggered_at.in_time_zone, format: :short) %>
+      · <%= alert.triggered_at.in_time_zone.strftime("%m/%d %H:%M") %>
       <%= alert.open? ? "(진행 중)" : "(해제됨)" %>
     </li>
   <% end %>

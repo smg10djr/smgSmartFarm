@@ -19,3 +19,6 @@
 .caption { color: #666; font-size: .8em; margin: 0; }
 .alert-open { color: #b00; }
 .alert-resolved { color: #666; }
+.manual-form { display: flex; flex-wrap: wrap; gap: .5rem; }
+.manual-form input[type=number] { width: 9rem; }
+.notice { color: #2a7; }

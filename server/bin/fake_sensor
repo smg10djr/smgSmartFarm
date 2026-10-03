@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+# 하드웨어 없이 가짜 센서 메시지를 1건 발행한다.  사용: bin/fake_sensor [deviceId]
+require "mqtt"
+require "json"
+require "time"
+
+device = ARGV[0] || "balcony-01"
+payload = {
+  schemaVersion: 1, deviceId: device, sequence: Time.now.to_i,
+  measuredAt: Time.now.utc.iso8601, airTemperatureC: 20.4, humidityPct: 61.2,
+  waterTemperatureC: 19.3, illuminanceLux: 8450, waterLow: false
+}
+MQTT::Client.connect(host: ENV.fetch("MQTT_HOST", "localhost"), port: Integer(ENV.fetch("MQTT_PORT", 1883))) do |c|
+  c.publish("smartfarm/#{device}/telemetry", payload.to_json, false, 1)
+end
+puts "published #{payload.to_json}"

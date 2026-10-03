@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+require_relative "../config/environment"
+
+subscriber = SmartFarm::MqttSubscriber.new
+%w[INT TERM].each { |sig| trap(sig) { subscriber.stop; exit } }
+subscriber.run

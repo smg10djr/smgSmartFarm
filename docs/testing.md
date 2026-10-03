@@ -54,11 +54,15 @@ git branch --show-current   # claude/project-thread-o1lire 이어야 합니다
 
 ```bash
 cp .env.example .env        # 파일을 열어 POSTGRES_PASSWORD를 아무 값으로 바꿉니다 (예: farm1234)
+                            # PC에 PostgreSQL이 이미 설치돼 있으면 POSTGRES_PORT=5433 처럼 바꿉니다
 cd infra
 docker compose --env-file ../.env up -d
 docker compose --env-file ../.env ps    # postgres와 mosquitto가 running(Up)이어야 합니다
 cd ..
 ```
+
+Windows에서 Ubuntu 안에 `docker` 명령이 없다면 Docker Desktop의 WSL integration이 꺼진 것입니다. Settings → Resources → WSL integration에서 Ubuntu를 켜거나, 이 단계만 PowerShell에서 실행해도 됩니다.
+`ports are not available ... 5432`가 나오면 PC에 PostgreSQL이 이미 있는 것이므로 `.env`의 `POSTGRES_PORT`를 5433으로 바꾸고 다시 실행하세요. (서버는 같은 `.env`의 값을 읽어 자동으로 따라갑니다.)
 
 ### 서버 준비
 
@@ -92,26 +96,28 @@ bin/rails test
 
 1. 브라우저에서 http://localhost:3000 을 열어 둡니다. "수신된 장치가 없습니다"가 보입니다.
 2. 터미널 C에서 `bin/fake_sensor`를 실행합니다.
-3. **새로고침 없이** 화면에 `balcony-01` 카드가 나타나고 수온 19.3℃가 보이면 성공입니다.
+3. **새로고침 없이** 화면에 `balcony-01` 카드와 pH·EC 입력란이 나타나고 수온 19.3℃가 보이면 성공입니다.
+   터미널 B에는 `[ingest] stored reading 1`이 찍힙니다. (Rails를 WSL에서 실행할 때 Windows 브라우저에서 접속이 안 되면 `bin/rails server -b 0.0.0.0`으로 실행하세요.)
 4. 같은 명령을 다시 실행하면 값은 같고 시각만 바뀐 새 기록이 쌓입니다.
    (같은 측정 시각의 중복 메시지는 저장되지 않습니다.)
-5. 그래프는 기록이 2건 이상, 시간 간격이 있어야 선이 그려집니다. 몇 분 간격으로 `bin/fake_sensor`를 반복해 보세요.
+5. 그래프는 **최근 24시간** 기록이 2건 이상이어야 선이 그려집니다. 몇 분 간격으로 `bin/fake_sensor`를 반복해 보세요. 미래 시각의 `measuredAt`은 그래프에 나오지 않습니다.
 
 ## 3단계: 알림 확인
 
-수온 알림 (24℃ 이상 또는 15℃ 이하):
+수온 알림 (24℃ 이상 또는 15℃ 이하). `measuredAt`은 **현재 시각**을 써야 하므로 `date` 명령으로 만듭니다.
 
 ```bash
+NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 docker compose --env-file ../.env -f ../infra/docker-compose.yml exec mosquitto mosquitto_pub \
   -t smartfarm/balcony-01/telemetry \
-  -m '{"schemaVersion":1,"deviceId":"balcony-01","measuredAt":"2026-10-03T12:00:00Z","waterTemperatureC":26.5}'
+  -m "{\"schemaVersion\":1,\"deviceId\":\"balcony-01\",\"measuredAt\":\"$NOW\",\"waterTemperatureC\":26.5}"
 ```
 
 - 화면 "알림"에 `수온 26.5℃ (기준 24.0℃ 이상)`이 빨간색 "진행 중"으로 뜹니다.
-- `measuredAt`을 새 시각으로 바꾸고 `waterTemperatureC`를 `23.0`으로 보내면 "해제됨"으로 바뀝니다.
+- 1초 뒤 `NOW`를 다시 만들어(`NOW=$(date -u ...)`) `waterTemperatureC`를 `23.0`으로 보내면 "해제됨"으로 바뀝니다.
   (23.8℃처럼 기준 바로 아래는 0.5℃ 여유 때문에 해제되지 않습니다.)
-- 같은 `measuredAt`으로 다시 보내면 무시됩니다 (터미널 B 로그에 duplicate).
-- `waterTemperatureC`를 250으로 보내면 거절됩니다 (로그에 rejected, 화면 변화 없음).
+- **같은 `NOW`로** 같은 메시지를 다시 보내면 무시됩니다 (터미널 B에 `[ingest] duplicate ignored`).
+- `waterTemperatureC`를 250으로 보내면 거절됩니다 (터미널 B에 `[ingest] rejected: 수온 값이 -10..60 범위를 벗어났습니다`, 화면 변화 없음).
 
 장치 오프라인 알림 (ESP32의 Last Will과 같은 메시지):
 
@@ -126,7 +132,7 @@ docker compose --env-file ../.env -f ../infra/docker-compose.yml exec mosquitto 
 ## 4단계: pH·EC 수동 입력
 
 화면의 "pH·EC 수동 입력"에 `pH 6.1`, `EC 1.3`을 넣고 "기록"을 누르면 장치 카드에 `수동 측정 ... pH 6.1 · EC 1.3 mS/cm`이 보입니다.
-pH 15처럼 범위를 벗어난 값이나 둘 다 비운 입력은 빨간 오류 문구가 나옵니다.
+pH 15처럼 범위를 벗어난 값은 브라우저가 먼저 막고, 둘 다 비운 입력은 `pH 또는 EC 중 하나는 입력해야 합니다`라는 빨간 문구가 나옵니다.
 
 ## 5단계: ESP32 (센서 없이)
 
@@ -154,4 +160,5 @@ ESP32와 USB 케이블이 있을 때 진행합니다. 배선은 필요 없습니
 | 화면에 장치가 안 나타남 | 터미널 B(`mqtt_subscriber`)가 켜져 있는지, 로그에 `subscribed`가 있는지 |
 | `[ingest] rejected` 로그 | JSON 형식(`schemaVersion: 1`, `deviceId`, ISO 8601 `measuredAt`)과 값 범위 |
 | 저장은 되는데 화면이 안 바뀜 | 터미널 A(`rails server`)와 같은 DB를 보는지, 브라우저 새로고침 후 재확인 |
+| `ports are not available` (5432) | PC의 기존 PostgreSQL과 충돌입니다. `.env`의 `POSTGRES_PORT`를 5433으로 바꿉니다 |
 | `connection refused` (1883) | `docker compose --env-file ../.env -f ../infra/docker-compose.yml ps`에서 mosquitto가 running인지 |

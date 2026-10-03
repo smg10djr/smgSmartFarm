@@ -1,0 +1,18 @@
+# Rails
+server/log/*
+server/tmp/*
+server/storage/*
+!server/log/.keep
+!server/tmp/.keep
+!server/storage/.keep
+server/public/assets
+server/.bundle
+server/vendor/bundle
+server/config/master.key
+# Secrets
+.env
+*.env.local
+firmware/**/secrets.h
+infra/mosquitto/passwd
+# Local
+.DS_Store

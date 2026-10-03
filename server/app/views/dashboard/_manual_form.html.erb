@@ -1,0 +1,12 @@
+<div id="manual-section">
+  <% if devices.any? %>
+    <h2>pH·EC 수동 입력</h2>
+    <%= form_with model: ManualMeasurement.new, url: manual_measurements_path, class: "manual-form" do |f| %>
+      <%= f.collection_select :device_id, devices, :id, :device_id %>
+      <%= f.number_field :ph, step: 0.01, min: 0, max: 14, placeholder: "pH (예: 6.0)" %>
+      <%= f.number_field :ec_ms_cm, step: 0.01, min: 0, max: 10, placeholder: "EC mS/cm (예: 1.2)" %>
+      <%= f.text_field :note, placeholder: "메모 (선택)" %>
+      <%= f.submit "기록" %>
+    <% end %>
+  <% end %>
+</div>

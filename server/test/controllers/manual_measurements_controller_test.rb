@@ -19,7 +19,7 @@ class ManualMeasurementsControllerTest < ActionDispatch::IntegrationTest
     end
     follow_redirect!
 
-    assert_select "p.alert-open"
+    assert_select "p.alert-open", /pH는 0~14/
   end
 
   test "pH와 EC가 모두 비면 저장하지 않는다" do

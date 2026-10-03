@@ -1,0 +1,20 @@
+ko:
+  errors:
+    format: "%{attribute}%{message}"
+    messages:
+      in: " 값이 %{count} 범위를 벗어났습니다"
+      not_a_number: "는 숫자가 아닙니다"
+      not_an_integer: "는 정수가 아닙니다"
+      blank: "는 비어 있을 수 없습니다"
+  activerecord:
+    attributes:
+      manual_measurement:
+        ph: "pH"
+        ec_ms_cm: "EC"
+        measured_at: "측정 시각"
+      sensor_reading:
+        measured_at: "측정 시각"
+        air_temperature_c: "기온"
+        humidity_pct: "습도"
+        water_temperature_c: "수온"
+        illuminance_lux: "조도"

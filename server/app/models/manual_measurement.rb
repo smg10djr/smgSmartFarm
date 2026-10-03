@@ -5,8 +5,8 @@ class ManualMeasurement < ApplicationRecord
   scope :recent, -> { order(measured_at: :desc).limit(10) }
 
   validates :measured_at, presence: true
-  validates :ph, numericality: { in: 0..14 }, allow_nil: true
-  validates :ec_ms_cm, numericality: { in: 0..10 }, allow_nil: true
+  validates :ph, numericality: { in: 0..14, message: "는 0~14 사이의 숫자여야 합니다" }, allow_nil: true
+  validates :ec_ms_cm, numericality: { in: 0..10, message: "는 0~10 mS/cm 사이의 숫자여야 합니다" }, allow_nil: true
   validate :ph_or_ec_present
 
   private

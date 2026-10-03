@@ -23,7 +23,6 @@ set -a; . ../.env; set +a
 bin/rails db:prepare
 bin/rails server
 bin/mqtt_subscriber           # MQTT 구독 프로세스 (별도 터미널)
-bin/jobs                      # Solid Queue 워커 (또는 SOLID_QUEUE_IN_PUMA=1 로 Puma에서 실행)
 bin/fake_sensor [deviceId]    # 센서 없이 가짜 telemetry 발행
 
 # 검사·테스트
@@ -49,6 +48,8 @@ pio run -e esp32dev -t upload        # 실제 DS18B20
 3. **알림**: `WaterTemperatureAlert`가 수온 24℃ 이상 / 15℃ 이하에서 `AlertEvent`를 열고, 0.5℃ 여유(히스테리시스)를 두고 닫는다. 같은 종류의 열린 알림은 장치당 1개.
 4. **화면**: `DashboardController`(`/`)가 장치별 현재값, 온라인 여부(5분 이상 수신 없으면 오프라인), 24시간 수온 그래프를 보여 준다. 새 측정값이 저장되면 `DashboardBroadcaster`가 Turbo Streams(Solid Cable)로 화면을 갱신한다.
 5. **수동 입력**: pH·EC는 센서가 없어 `ManualMeasurementsController`/`ManualMeasurement`로 직접 입력한다.
+
+Solid Queue 어댑터는 production에서만 설정되어 있다(`config/environments/production.rb`). development에는 어댑터 설정이 없어 Rails 기본값(in-process async)으로 job이 job을 넣은 프로세스(`bin/mqtt_subscriber`) 안에서 실행되므로, 개발 중에는 별도 워커가 필요 없다. production에서는 `bin/jobs` 또는 `SOLID_QUEUE_IN_PUMA=1`(`config/puma.rb`)로 워커를 띄운다.
 
 서비스 객체는 `app/services/`에 두고 `Klass.call(...)` 형태를 쓴다. Job은 얇게 유지하고 로직은 서비스에 둔다.
 

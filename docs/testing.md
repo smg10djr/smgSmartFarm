@@ -160,5 +160,8 @@ ESP32와 USB 케이블이 있을 때 진행합니다. 배선은 필요 없습니
 | 화면에 장치가 안 나타남 | 터미널 B(`mqtt_subscriber`)가 켜져 있는지, 로그에 `subscribed`가 있는지 |
 | `[ingest] rejected` 로그 | JSON 형식(`schemaVersion: 1`, `deviceId`, ISO 8601 `measuredAt`)과 값 범위 |
 | 저장은 되는데 화면이 안 바뀜 | 터미널 A(`rails server`)와 같은 DB를 보는지, 브라우저 새로고침 후 재확인 |
+| `bin/rails`가 `ruby\r: No such file or directory` | Windows에서 받은 소스의 줄바꿈(CRLF) 때문입니다. `ruby bin/rails ...`처럼 `ruby`를 앞에 붙여 실행합니다 (`bin/mqtt_subscriber`, `bin/fake_sensor`도 같습니다) |
+| `.env`를 읽은 값 끝에 `\r`이 붙어 `bad URI` 등이 남 | `.env`가 CRLF입니다. `. <(tr -d '\r' < ../.env)`로 읽거나 파일을 LF로 저장합니다 |
+| `bin/rails test`에서 `Device has already been taken` 등 여러 건 실패 | `DATABASE_URL`을 지정해 두면 test 환경에도 적용되어 개발 DB에서 테스트가 돕니다. `DATABASE_URL` 대신 `.env`의 `POSTGRES_PORT`를 쓰거나, 테스트 때는 `smartfarm_test`를 가리키도록 바꿉니다 |
 | `ports are not available` (5432) | PC의 기존 PostgreSQL과 충돌입니다. `.env`의 `POSTGRES_PORT`를 5433으로 바꿉니다 |
 | `connection refused` (1883) | `docker compose --env-file ../.env -f ../infra/docker-compose.yml ps`에서 mosquitto가 running인지 |

@@ -22,6 +22,15 @@ class ManualMeasurementsControllerTest < ActionDispatch::IntegrationTest
     assert_select "p.alert-open", /pH는 0~14/
   end
 
+  test "EC 범위를 벗어난 값은 한국어 문구로 거절한다" do
+    assert_no_difference -> { ManualMeasurement.count } do
+      post manual_measurements_url, params: { manual_measurement: { device_id: @device.id, ec_ms_cm: "11" } }
+    end
+    follow_redirect!
+
+    assert_select "p.alert-open", /EC는 0~10/
+  end
+
   test "pH와 EC가 모두 비면 저장하지 않는다" do
     assert_no_difference -> { ManualMeasurement.count } do
       post manual_measurements_url, params: { manual_measurement: { device_id: @device.id, note: "메모만" } }

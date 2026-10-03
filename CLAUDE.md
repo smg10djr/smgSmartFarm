@@ -37,6 +37,11 @@ pio run -e esp32dev_fake -t upload   # 가짜 수온 (센서 없이 서버 연�
 pio run -e esp32dev -t upload        # 실제 DS18B20
 ```
 
+Windows(WSL)에서 실행할 때의 함정 (자세한 증상은 `docs/testing.md`의 "문제가 생기면"):
+- 체크아웃이 CRLF라 `bin/*` shebang이 깨진다 → `ruby bin/rails ...`로 실행하고, `.env`는 `\r`을 제거해서 읽는다.
+- `database.yml`에 포트 설정이 없다. postgres가 5432가 아닌 포트(예: 5433)로 떠 있으면 `DATABASE_URL`로 지정한다.
+- `DATABASE_URL`은 test 환경에도 적용되므로, 테스트 때는 `smartfarm_test`를 가리키도록 바꾼다. 그렇지 않으면 개발 DB에서 테스트가 돈다.
+
 단계별 수동 시험 절차는 `docs/testing.md`를 따른다. Wi-Fi·MQTT 비밀번호, `.env`, `firmware/src/secrets.h`는 Git에 올리지 않는다.
 
 ## 아키텍처 (여러 파일을 읽어야 보이는 흐름)

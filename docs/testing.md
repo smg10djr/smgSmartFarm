@@ -81,7 +81,7 @@ bin/rails db:prepare        # 처음 한 번
 bin/rails test
 ```
 
-기대 결과: `22 runs, ... 0 failures, 0 errors`. 여기서 실패하면 환경 문제이므로 다음 단계로 가지 마세요.
+기대 결과: `32 runs, ... 0 failures, 0 errors`. 여기서 실패하면 환경 문제이므로 다음 단계로 가지 마세요.
 (`could not connect to server`가 나오면 postgres 컨테이너가 떠 있는지, `.env`를 읽었는지 확인합니다.)
 
 ## 2단계: 가짜 센서로 화면까지 한 번에 확인
@@ -163,5 +163,7 @@ ESP32와 USB 케이블이 있을 때 진행합니다. 배선은 필요 없습니
 | `bin/rails`가 `ruby\r: No such file or directory` | Windows에서 받은 소스의 줄바꿈(CRLF) 때문입니다. `ruby bin/rails ...`처럼 `ruby`를 앞에 붙여 실행합니다 (`bin/mqtt_subscriber`, `bin/fake_sensor`도 같습니다) |
 | `.env`를 읽은 값 끝에 `\r`이 붙어 `bad URI` 등이 남 | `.env`가 CRLF입니다. `. <(tr -d '\r' < ../.env)`로 읽거나 파일을 LF로 저장합니다 |
 | `bin/rails test`에서 `Device has already been taken` 등 여러 건 실패 | `DATABASE_URL`을 지정해 두면 test 환경에도 적용되어 개발 DB에서 테스트가 돕니다. `DATABASE_URL` 대신 `.env`의 `POSTGRES_PORT`를 쓰거나, 테스트 때는 `smartfarm_test`를 가리키도록 바꿉니다 |
+| Ubuntu에서 `The command 'docker' could not be found in this WSL 2 distro` | Docker Desktop의 WSL integration이 꺼진 것입니다. Settings → Resources → WSL integration에서 Ubuntu를 켜고, Ubuntu 터미널을 다시 열어 `docker --version`이 나오는지 확인합니다. Docker Desktop 자체가 꺼져 있어도 같은 증상이 납니다 |
+| PowerShell에서 `&&` 또는 `set -a` 명령이 오류 | 이 문서의 명령은 Ubuntu(bash)용입니다. PowerShell에서 한 번에 실행하려면 `wsl -d Ubuntu -- bash -ic "cd /mnt/d/smgSmartFarm/server && ruby bin/rails test"`처럼 감쌉니다. mise로 설치한 Ruby는 `-i`(대화형) 옵션이 있어야 잡힙니다 |
 | `ports are not available` (5432) | PC의 기존 PostgreSQL과 충돌입니다. `.env`의 `POSTGRES_PORT`를 5433으로 바꿉니다 |
 | `connection refused` (1883) | `docker compose --env-file ../.env -f ../infra/docker-compose.yml ps`에서 mosquitto가 running인지 |

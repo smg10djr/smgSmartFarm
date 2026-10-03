@@ -3,27 +3,72 @@
 지금까지 만든 것(서버, 화면, 알림, ESP32 펌웨어)을 단계별로 시험합니다.
 앞 단계가 되어야 다음 단계로 넘어가세요. 1~4단계는 센서와 ESP32 없이 PC만으로 할 수 있습니다.
 
-## 준비물
+## 준비물 (처음 한 번만)
 
-- Docker (Docker Desktop 등), Ruby 3.3 이상, Git
-- Windows는 WSL2(Ubuntu) 안에서 진행하는 것을 권장합니다.
+이 프로젝트는 PC에서 실행해야 시험할 수 있습니다. 필요한 것은 네 가지입니다.
+
+| 필요한 것 | 용도 |
+|---|---|
+| 소스 코드 | 이 저장소 |
+| Docker | PostgreSQL과 MQTT 브로커(Mosquitto)를 한 줄로 실행 |
+| Ruby 3.3 이상 | Rails 서버 실행 |
+| Git (또는 ZIP 다운로드) | 소스 받기 |
+
+### Windows (WSL2의 Ubuntu 안에서 진행)
+
+1. PowerShell을 관리자 권한으로 열어 `wsl --install`을 실행하고 PC를 재시작합니다. 재시작 후 Ubuntu가 열리면 사용자 이름과 비밀번호를 정합니다.
+2. [Docker Desktop](https://www.docker.com/products/docker-desktop/)을 설치하고, Settings → Resources → WSL integration에서 Ubuntu를 켭니다.
+3. Ubuntu 터미널에서 필요한 패키지와 Ruby를 설치합니다 (Ruby 컴파일에 몇 분 걸립니다).
 
 ```bash
-git clone https://github.com/smg10djr/smgSmartFarm.git && cd smgSmartFarm
-git checkout main        # PR 병합 전이라면 claude/project-thread-o1lire
-
-cp .env.example .env     # POSTGRES_PASSWORD를 아무 값으로 바꿉니다
-cd infra && docker compose --env-file ../.env up -d && cd ..
-docker compose -f infra/docker-compose.yml ps    # postgres, mosquitto가 running인지 확인
+sudo apt update && sudo apt install -y git curl build-essential libpq-dev libyaml-dev libssl-dev zlib1g-dev
+curl https://mise.run | sh
+echo 'eval "$(~/.local/bin/mise activate bash)"' >> ~/.bashrc && source ~/.bashrc
+mise use -g ruby@3.3
+ruby -v          # 3.3.x가 나와야 합니다
+docker --version # 나오지 않으면 2번의 WSL integration을 확인합니다
 ```
 
-터미널을 열 때마다 서버 폴더에서 환경변수를 읽어야 합니다.
+### Mac
+
+```bash
+brew install git mise libpq
+echo 'eval "$(mise activate zsh)"' >> ~/.zshrc && source ~/.zshrc
+mise use -g ruby@3.3
+```
+
+그리고 Docker Desktop을 설치합니다.
+
+### 소스 받기
+
+터미널(Windows는 Ubuntu)에서 실행합니다. 지금은 모든 작업이 `claude/project-thread-o1lire` 브랜치(저장소의 기본 브랜치)에 있습니다.
+PR을 병합한 뒤에는 `main`을 받으면 됩니다. Git이 어렵다면 저장소 페이지의 Code → Download ZIP으로 받아 압축을 풀어도 됩니다.
+
+```bash
+git clone https://github.com/smg10djr/smgSmartFarm.git
+cd smgSmartFarm
+git branch --show-current   # claude/project-thread-o1lire 이어야 합니다
+```
+
+### 데이터베이스와 브로커 켜기
+
+```bash
+cp .env.example .env        # 파일을 열어 POSTGRES_PASSWORD를 아무 값으로 바꿉니다 (예: farm1234)
+cd infra
+docker compose --env-file ../.env up -d
+docker compose --env-file ../.env ps    # postgres와 mosquitto가 running(Up)이어야 합니다
+cd ..
+```
+
+### 서버 준비
+
+터미널을 새로 열 때마다 `server` 폴더에서 첫 줄(환경변수 읽기)을 먼저 실행합니다.
 
 ```bash
 cd server
 set -a; . ../.env; set +a
-bundle install
-bin/rails db:prepare
+bundle install              # 처음 한 번 (몇 분 걸림)
+bin/rails db:prepare        # 처음 한 번
 ```
 
 ## 1단계: 자동 테스트
@@ -57,7 +102,7 @@ bin/rails test
 수온 알림 (24℃ 이상 또는 15℃ 이하):
 
 ```bash
-docker compose -f ../infra/docker-compose.yml exec mosquitto mosquitto_pub \
+docker compose --env-file ../.env -f ../infra/docker-compose.yml exec mosquitto mosquitto_pub \
   -t smartfarm/balcony-01/telemetry \
   -m '{"schemaVersion":1,"deviceId":"balcony-01","measuredAt":"2026-10-03T12:00:00Z","waterTemperatureC":26.5}'
 ```
@@ -71,8 +116,8 @@ docker compose -f ../infra/docker-compose.yml exec mosquitto mosquitto_pub \
 장치 오프라인 알림 (ESP32의 Last Will과 같은 메시지):
 
 ```bash
-docker compose -f ../infra/docker-compose.yml exec mosquitto mosquitto_pub -r -t smartfarm/balcony-01/status -m offline
-docker compose -f ../infra/docker-compose.yml exec mosquitto mosquitto_pub -r -t smartfarm/balcony-01/status -m online
+docker compose --env-file ../.env -f ../infra/docker-compose.yml exec mosquitto mosquitto_pub -r -t smartfarm/balcony-01/status -m offline
+docker compose --env-file ../.env -f ../infra/docker-compose.yml exec mosquitto mosquitto_pub -r -t smartfarm/balcony-01/status -m online
 ```
 
 `offline`이면 카드가 "오프라인"으로 바뀌고 "장치가 오프라인입니다" 알림이 열리며, `online`이면 알림이 해제됩니다.
@@ -109,4 +154,4 @@ ESP32와 USB 케이블이 있을 때 진행합니다. 배선은 필요 없습니
 | 화면에 장치가 안 나타남 | 터미널 B(`mqtt_subscriber`)가 켜져 있는지, 로그에 `subscribed`가 있는지 |
 | `[ingest] rejected` 로그 | JSON 형식(`schemaVersion: 1`, `deviceId`, ISO 8601 `measuredAt`)과 값 범위 |
 | 저장은 되는데 화면이 안 바뀜 | 터미널 A(`rails server`)와 같은 DB를 보는지, 브라우저 새로고침 후 재확인 |
-| `connection refused` (1883) | `docker compose ps`에서 mosquitto가 running인지 |
+| `connection refused` (1883) | `docker compose --env-file ../.env -f ../infra/docker-compose.yml ps`에서 mosquitto가 running인지 |

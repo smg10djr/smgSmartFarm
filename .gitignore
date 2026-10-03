@@ -16,3 +16,7 @@ firmware/**/secrets.h
 infra/mosquitto/passwd
 # Local
 .DS_Store
+
+# PlatformIO
+firmware/.pio/
+*.whl

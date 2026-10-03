@@ -1,0 +1,10 @@
+# Mosquitto 접근 제어 목록. 비밀번호는 여기 쓰지 않고 passwd 파일(Git 제외)에 둡니다.
+
+# Rails 구독자 계정: 모든 장치의 telemetry·status를 읽기만 한다.
+user rails
+topic read smartfarm/+/telemetry
+topic read smartfarm/+/status
+
+# 장치 계정: 사용자 이름(%u)을 장치 ID와 같게 만들면 자기 토픽(smartfarm/<deviceId>/#)에만 쓸 수 있다.
+# 예) 사용자 balcony-01 은 smartfarm/balcony-01/telemetry, smartfarm/balcony-01/status 에만 발행 가능
+pattern write smartfarm/%u/#

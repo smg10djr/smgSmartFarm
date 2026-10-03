@@ -12,7 +12,7 @@ ESP32 → Mosquitto(MQTT) → Ruby Subscriber → Solid Queue → Rails 8 → Po
 |---|---|
 | `server/` | Rails 8 앱 (PostgreSQL, Solid Queue, Solid Cable, Hotwire) |
 | `infra/` | 개발용 Docker Compose (Mosquitto, PostgreSQL) |
-| `firmware/` | ESP32 프로그램 (예정) |
+| `firmware/` | ESP32 프로그램 (PlatformIO, 수온 센서) |
 | `docs/` | 계획, MQTT 토픽 명세, 결정 기록 |
 | `data/` | 재배 일지 CSV |
 

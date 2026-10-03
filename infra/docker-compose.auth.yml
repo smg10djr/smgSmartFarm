@@ -1,0 +1,10 @@
+# Mosquitto 인증을 켜는 선택 설정. 기본 docker-compose.yml 위에 덧씌웁니다.
+# 사용법: docker compose --env-file ../.env -f docker-compose.yml -f docker-compose.auth.yml up -d
+# 먼저 mosquitto/passwd 파일을 만들어야 합니다 (docs/testing.md의 "Mosquitto 인증 켜기" 참고).
+services:
+  mosquitto:
+    volumes:
+      - ./mosquitto/mosquitto.auth.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/passwd:/mosquitto/config/passwd:ro
+      - ./mosquitto/acl:/mosquitto/config/acl:ro
+      - mosquitto_data:/mosquitto/data

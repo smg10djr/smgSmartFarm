@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+require_relative "../config/environment"
+
+# 로그를 터미널에도 바로 보여준다 (기본은 log/development.log에만 기록)
+$stdout.sync = true
+Rails.logger.broadcast_to(ActiveSupport::Logger.new($stdout, level: Logger::INFO))
+
+subscriber = SmartFarm::MqttSubscriber.new
+%w[INT TERM].each { |sig| trap(sig) { subscriber.stop; exit } }
+subscriber.run

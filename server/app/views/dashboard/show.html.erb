@@ -1,0 +1,14 @@
+<%= turbo_stream_from "dashboard" %>
+
+<main class="dashboard">
+  <h1>스마트팜 대시보드</h1>
+
+  <% if notice %><p class="notice"><%= notice %></p><% end %>
+  <% if alert %><p class="alert-open"><%= alert %></p><% end %>
+
+  <%= render "dashboard/devices", devices: @devices %>
+  <%= render "dashboard/manual_form", devices: @devices %>
+
+  <h2>알림</h2>
+  <%= render "dashboard/alerts", alerts: @alerts %>
+</main>

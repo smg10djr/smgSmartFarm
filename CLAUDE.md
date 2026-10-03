@@ -60,5 +60,5 @@ Solid Queue 어댑터는 production에서만 설정되어 있다(`config/environ
 
 ## 상태 메모
 
-- 펌웨어는 작성만 되었고 이 저장소를 작성한 환경에서는 컴파일해 보지 못했다. 처음 빌드 오류는 실제 코드 문제일 수 있다.
+- 펌웨어는 `esp32dev`·`esp32dev_fake` 두 환경 모두 컴파일에 성공했다(2026-10-03, PlatformIO 6.2.0). 실물 ESP32에 올려 Wi-Fi·MQTT·센서 동작을 확인한 적은 없다.
 - 보류 범위(`docs/plan.md`): 220V 직접 제어, 자동 pH·EC 주입.

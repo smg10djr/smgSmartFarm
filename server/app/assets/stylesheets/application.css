@@ -8,3 +8,14 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+.dashboard { max-width: 720px; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; }
+.device { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+.device small { font-size: .7em; margin-left: .5rem; color: #666; }
+.device dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; margin: 0; }
+.device dt { color: #666; }
+.device dd { margin: 0; }
+.chart { width: 100%; height: auto; color: #2a7; margin-top: 1rem; }
+.caption { color: #666; font-size: .8em; margin: 0; }
+.alert-open { color: #b00; }
+.alert-resolved { color: #666; }

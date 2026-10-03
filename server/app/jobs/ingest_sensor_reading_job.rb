@@ -3,10 +3,15 @@ class IngestSensorReadingJob < ApplicationJob
 
   def perform(payload)
     result = SensorReadingIngestor.call(payload)
-    case result.status
-    when :stored then Rails.logger.info("[ingest] stored reading #{result.reading.id}")
-    when :duplicate then Rails.logger.info("[ingest] duplicate ignored")
-    else Rails.logger.warn("[ingest] rejected: #{result.error}")
+
+    if result.stored?
+      WaterTemperatureAlert.call(result.reading)
+      DashboardBroadcaster.call(result.reading.device)
+      Rails.logger.info("[ingest] stored reading #{result.reading.id}")
+    elsif result.status == :duplicate
+      Rails.logger.info("[ingest] duplicate ignored")
+    else
+      Rails.logger.warn("[ingest] rejected: #{result.error}")
     end
   end
 end

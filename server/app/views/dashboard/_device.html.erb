@@ -1,0 +1,26 @@
+<% reading = device.latest_reading %>
+<section id="<%= dom_id(device) %>" class="device">
+  <h2>
+    <%= device.device_id %>
+    <small><%= device.online? ? "온라인" : "오프라인" %></small>
+  </h2>
+
+  <% if reading %>
+    <dl>
+      <dt>수온</dt><dd><%= reading.water_temperature_c || "-" %> ℃</dd>
+      <dt>기온</dt><dd><%= reading.air_temperature_c || "-" %> ℃</dd>
+      <dt>습도</dt><dd><%= reading.humidity_pct || "-" %> %</dd>
+      <dt>조도</dt><dd><%= reading.illuminance_lux || "-" %> lux</dd>
+      <dt>수위</dt><dd><%= reading.water_low.nil? ? "-" : (reading.water_low ? "부족" : "정상") %></dd>
+      <dt>마지막 수신</dt><dd><%= l(device.last_seen_at.in_time_zone, format: :short) %></dd>
+    </dl>
+
+    <% points = water_temp_points(device) %>
+    <% if points %>
+      <svg viewBox="0 0 <%= DashboardHelper::CHART_W %> <%= DashboardHelper::CHART_H %>" role="img" aria-label="최근 24시간 수온" class="chart">
+        <polyline points="<%= points %>" fill="none" stroke="currentColor" stroke-width="2" />
+      </svg>
+      <p class="caption">최근 24시간 수온</p>
+    <% end %>
+  <% end %>
+</section>

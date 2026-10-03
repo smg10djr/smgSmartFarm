@@ -1,0 +1,16 @@
+<%= turbo_stream_from "dashboard" %>
+
+<main class="dashboard">
+  <h1>스마트팜 대시보드</h1>
+
+  <% if @devices.empty? %>
+    <p>아직 수신된 장치가 없습니다. <code>bin/fake_sensor</code>로 가짜 메시지를 보내 보세요.</p>
+  <% end %>
+
+  <% @devices.each do |device| %>
+    <%= render "dashboard/device", device: device %>
+  <% end %>
+
+  <h2>알림</h2>
+  <%= render "dashboard/alerts", alerts: @alerts %>
+</main>

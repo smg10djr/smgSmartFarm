@@ -10,9 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_03_084128) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_03_084439) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "alert_events", force: :cascade do |t|
+    t.bigint "device_id", null: false
+    t.string "kind", null: false
+    t.string "message", null: false
+    t.datetime "triggered_at", null: false
+    t.datetime "resolved_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["device_id", "kind"], name: "index_alert_events_one_open_per_kind", unique: true, where: "(resolved_at IS NULL)"
+    t.index ["device_id"], name: "index_alert_events_on_device_id"
+  end
 
   create_table "devices", force: :cascade do |t|
     t.string "device_id"
@@ -38,5 +50,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_084128) do
     t.index ["device_id"], name: "index_sensor_readings_on_device_id"
   end
 
+  add_foreign_key "alert_events", "devices"
   add_foreign_key "sensor_readings", "devices"
 end
